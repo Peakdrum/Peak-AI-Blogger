@@ -5,13 +5,13 @@
  * Publishing on create runs the full publish-time validation pipeline.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
 import { posts } from "@/db/schema";
 import { isAuthorized, unauthorized } from "@/lib/auth";
 import { validateArticle } from "@/lib/articles/validate";
 import { assertSinglePillar } from "@/lib/articles/cluster";
 import { checkCannibalization } from "@/lib/articles/cannibalization";
+import { revalidateArticle } from "@/lib/articles/revalidate";
 import {
   ensureUniqueSlug,
   setPostTags,
@@ -112,10 +112,8 @@ export async function POST(req: NextRequest) {
     await setClusterPillar(created.clusterId, created.id);
   }
 
-  // On-demand revalidation (spec §3.9) — hours fallback configured in page.
-  revalidatePath(`/blog/${created.slug}`);
-  revalidatePath("/blog");
-  if (created.categoryId) revalidatePath("/category");
+  // On-demand revalidation (spec §3.9) — purges post + all listing/index pages.
+  revalidateArticle(created.slug);
 
   return NextResponse.json({ post: created, warnings }, { status: 201 });
 }

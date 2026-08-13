@@ -1,22 +1,27 @@
 # Local Docker run for Peak AI Blogger.
 # The app talks to remote Supabase (DATABASE_URL in .env.local) — no DB service here.
 #
-#   docker compose up --build      # build + run
-#   docker compose logs -f         # follow logs
-#   docker compose down            # stop
+#   docker compose up --build           # build + run (host port defaults to 3020)
+#   BLOG_PORT=3000 docker compose up    # override the host port
+#   docker compose logs -f              # follow logs
+#   docker compose down                 # stop
 #
+# Port 3000 was already taken by another container on this machine, so the
+# default host port is 3020. Override with BLOG_PORT (and NEXT_PUBLIC_SITE_URL).
 services:
   peak-ai-blogger:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        # Baked into the client bundle at build time.
-        NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        # Baked into the client bundle at build time — must match the host URL:port.
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3020}
+        # Needed at build (ISR prerender). Quoted because the URL contains : @ %.
+        DATABASE_URL: "${DATABASE_URL}"
     image: peak-ai-blogger:latest
     container_name: peak-ai-blogger
     ports:
-      - "3000:3000"
+      - "${BLOG_PORT:-3020}:3000"
     # Runtime secrets read from .env.local (gitignored). Never baked into the image.
     env_file:
       - .env.local

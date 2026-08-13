@@ -5,7 +5,6 @@
  *  AI drafts cannot accidentally go live via PATCH (spec §4.4).
  */
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
 import { posts } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -14,6 +13,7 @@ import { validateArticle } from "@/lib/articles/validate";
 import { assertSinglePillar } from "@/lib/articles/cluster";
 import { checkCannibalization } from "@/lib/articles/cannibalization";
 import { getPostById, setClusterPillar } from "@/lib/articles/queries";
+import { revalidateArticle } from "@/lib/articles/revalidate";
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   if (!isAuthorized(req)) return unauthorized();
@@ -99,9 +99,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     await setClusterPillar(updated.clusterId, updated.id);
   }
 
-  revalidatePath(`/blog/${updated.slug}`);
-  revalidatePath("/blog");
-  revalidatePath("/");
+  revalidateArticle(updated.slug);
 
   return NextResponse.json({ post: updated, warnings });
 }

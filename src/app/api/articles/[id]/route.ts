@@ -4,13 +4,13 @@
  *                             immutable once published; publishedAt preserved)
  */
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
 import { posts } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { isAuthorized, unauthorized } from "@/lib/auth";
 import { validateArticle } from "@/lib/articles/validate";
 import { getPostById, setPostTags } from "@/lib/articles/queries";
+import { revalidateArticle } from "@/lib/articles/revalidate";
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -65,8 +65,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   if (tagSlugs) await setPostTags(id, tagSlugs);
 
-  revalidatePath(`/blog/${updated.slug}`);
-  revalidatePath("/blog");
+  revalidateArticle(updated.slug);
 
   return NextResponse.json({ post: updated, warnings });
 }

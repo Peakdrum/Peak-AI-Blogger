@@ -18,8 +18,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # NEXT_PUBLIC_* vars are inlined at BUILD time, so pass as a build arg.
-ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
+ARG NEXT_PUBLIC_SITE_URL=http://localhost:3020
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+# DATABASE_URL is needed at BUILD time because ISR pages prerender against the
+# database. This lives ONLY in the builder stage (discarded) — the final runner
+# image receives DATABASE_URL at runtime via env_file, so no secret is baked in.
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
