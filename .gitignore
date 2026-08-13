@@ -41,3 +41,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env.production
+peak-ai-blogger-prod.tar.gz
+*.tar.gz
