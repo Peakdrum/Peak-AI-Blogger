@@ -1,0 +1,26 @@
+# Local Docker run for Peak AI Blogger.
+# The app talks to remote Supabase (DATABASE_URL in .env.local) — no DB service here.
+#
+#   docker compose up --build      # build + run
+#   docker compose logs -f         # follow logs
+#   docker compose down            # stop
+#
+services:
+  peak-ai-blogger:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Baked into the client bundle at build time.
+        NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    image: peak-ai-blogger:latest
+    container_name: peak-ai-blogger
+    ports:
+      - "3000:3000"
+    # Runtime secrets read from .env.local (gitignored). Never baked into the image.
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
