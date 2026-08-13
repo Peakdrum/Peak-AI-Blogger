@@ -16,7 +16,8 @@ export default async function BlogIndex() {
   const posts = await listPosts({ status: "published", limit: 100 });
   return (
     <div className="container-narrow py-10">
-      <h1 className="mb-6 text-3xl font-extrabold tracking-tight">All guides</h1>
+      <h1 className="font-display mb-2 text-3xl font-semibold tracking-tight">All guides</h1>
+      <p className="mb-8 text-ink-soft">Long-form guides on local AI, Ollama, n8n, and private automation.</p>
       {posts.length === 0 ? (
         <p className="text-gray-500">No published posts yet.</p>
       ) : (

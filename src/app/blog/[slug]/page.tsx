@@ -1,5 +1,5 @@
 /**
- * Post page /blog/{slug} — the SEO/AEO centerpiece (spec §3.8-3.11).
+ * Post page /blog/{slug} — editorial article layout (spec §3.8-3.11).
  *  - Derived metadata (seoTitle ?? title, excerpt, canonical, OG from featured)
  *  - Reading time + word count derived at render, never stored
  *  - JSON-LD: BlogPosting + BreadcrumbList + FAQPage (independent blocks)
@@ -90,7 +90,7 @@ export default async function PostPage({ params }: Params) {
           ne(posts.id, post.id),
         ),
       )
-      .limit(8);
+      .limit(6);
     related.sort((a, b) =>
       a.clusterRole === "pillar" ? -1 : b.clusterRole === "pillar" ? 1 : 0,
     );
@@ -98,7 +98,8 @@ export default async function PostPage({ params }: Params) {
 
   const toc = extractToc(post.markdownBody);
   const minutes = Math.max(1, Math.round(wordCount(post.markdownBody) / 225));
-  const ogImage = post.ogImagePath ?? post.featuredImagePath;
+  const hero = post.ogImagePath ?? post.featuredImagePath;
+  const heroSrc = hero ? (hero.startsWith("http") ? hero : absUrl(hero)) : null;
 
   const jsonLd = postJsonLdBlocks({
     slug: post.slug,
@@ -126,78 +127,95 @@ export default async function PostPage({ params }: Params) {
       <Breadcrumbs items={crumbs} />
       <JsonLd data={jsonLd} />
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_18rem]">
-        <article className="min-w-0 max-w-3xl">
-          {/* Header */}
-          <header className="mb-8">
-            <h1 className="mb-3 text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
-              {post.title}
-            </h1>
-            {post.excerpt && (
-              <p className="mb-4 text-lg text-gray-600 dark:text-gray-300">{post.excerpt}</p>
-            )}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
-              {post.publishedAt && (
-                <time dateTime={new Date(post.publishedAt).toISOString()}>
-                  {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                    year: "numeric", month: "long", day: "numeric",
-                  })}
-                </time>
-              )}
-              <span>·</span>
-              <span>{readingTime(minutes)}</span>
-              {category && (
-                <>
-                  <span>·</span>
-                  <Link href={`/category/${category.slug}`} className="hover:underline">
-                    {category.name}
-                  </Link>
-                </>
-              )}
-            </div>
-            {tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {tags.map((t) => (
-                  <Link
-                    key={t.id}
-                    href={`/tag/${t.slug}`}
-                    className="rounded-full bg-[var(--muted)] px-2.5 py-0.5 text-xs text-gray-600 hover:underline dark:text-gray-400"
-                  >
-                    #{t.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-            {ogImage && (
-              <img
-                src={ogImage.startsWith("http") ? ogImage : absUrl(ogImage)}
-                alt={post.featuredImageAlt ?? post.title}
-                className="mt-6 aspect-video w-full rounded-xl border border-[var(--border)] object-cover"
-              />
-            )}
-          </header>
+      {/* ───────── Article header (editorial) ───────── */}
+      <header className="rise mx-auto mb-10 max-w-3xl text-center">
+        {category && (
+          <Link
+            href={`/category/${category.slug}`}
+            className="mb-4 inline-block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-accent transition-colors hover:underline"
+          >
+            {category.name}
+          </Link>
+        )}
+        <h1 className="font-display text-balance text-3xl font-semibold leading-[1.12] tracking-tight md:text-[2.75rem]">
+          {post.title}
+        </h1>
+        {post.excerpt && (
+          <p className="font-display mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
+            {post.excerpt}
+          </p>
+        )}
 
+        {/* Byline */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-sm text-ink-soft">
+          <span className="font-medium text-foreground">{siteConfig.author.name}</span>
+          {post.publishedAt && (
+            <>
+              <span aria-hidden>·</span>
+              <time dateTime={new Date(post.publishedAt).toISOString()}>
+                {new Date(post.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+              </time>
+            </>
+          )}
+          <span aria-hidden>·</span>
+          <span>{readingTime(minutes)}</span>
+        </div>
+      </header>
+
+      {/* Hero image */}
+      {heroSrc && (
+        <figure className="mb-10 overflow-hidden rounded-2xl border border-border bg-surface">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={heroSrc}
+            alt={post.featuredImageAlt ?? post.title}
+            className="aspect-[16/9] w-full object-cover"
+          />
+        </figure>
+      )}
+
+      {/* Tags */}
+      {tags.length > 0 && (
+        <div className="mx-auto mb-10 flex max-w-3xl flex-wrap justify-center gap-2">
+          {tags.map((t) => (
+            <Link
+              key={t.id}
+              href={`/tag/${t.slug}`}
+              className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-ink-soft transition-colors hover:border-accent/40 hover:text-accent"
+            >
+              #{t.name}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* ───────── Body + TOC ───────── */}
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_16rem]">
+        <article className="measure min-w-0 mx-auto w-full">
           <MarkdownRenderer content={post.markdownBody} />
 
           {/* Related in cluster */}
           {related.length > 0 && (
-            <section className="mt-12 border-t border-[var(--border)] pt-6" data-section="related">
-              <h2 className="mb-3 text-lg font-semibold">
-                {cluster ? `More in: ${cluster.name}` : "Related guides"}
+            <section className="mt-14 border-t border-border pt-8" data-section="related">
+              <h2 className="font-display mb-4 text-xl font-semibold tracking-tight">
+                {cluster ? `More in ${cluster.name}` : "Related guides"}
               </h2>
-              <ul className="grid gap-2 sm:grid-cols-2">
+              <ul className="space-y-1">
                 {related.map((r) => (
                   <li key={r.id}>
                     <Link
                       href={`/blog/${r.slug}`}
-                      className="block rounded-lg border border-[var(--border)] p-3 text-sm hover:bg-[var(--muted)]"
+                      className="group flex items-baseline gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-muted"
                     >
                       {r.clusterRole === "pillar" && (
-                        <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-wide text-emerald-600">
+                        <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide text-white">
                           Pillar
                         </span>
                       )}
-                      <span className="font-medium">{r.title}</span>
+                      <span className="font-medium underline-offset-4 group-hover:text-accent group-hover:underline">
+                        {r.title}
+                      </span>
+                      <span className="ml-auto text-ink-soft transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
                     </Link>
                   </li>
                 ))}
@@ -206,7 +224,6 @@ export default async function PostPage({ params }: Params) {
           )}
         </article>
 
-        {/* TOC sidebar */}
         <Toc items={toc} />
       </div>
     </div>

@@ -1,0 +1,21 @@
+# Deploy compose for the droplet (blog.peakaistack.com).
+# Uses a PRE-BUILT image (transferred via docker save/load) — no build step on
+# the constrained 1GB droplet. Binds ONLY to 127.0.0.1 so the app is reachable
+# solely through Caddy (public 80/443 are Caddy's job).
+#
+#   docker compose -f docker-compose.deploy.yml up -d
+#
+services:
+  peak-ai-blogger:
+    image: peak-ai-blogger:prod
+    container_name: peak-ai-blogger
+    ports:
+      - "127.0.0.1:3020:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    # Bound so the blog can never OOM the other 5 services on this small droplet.
+    mem_limit: 400m
+    restart: unless-stopped

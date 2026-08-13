@@ -16,7 +16,7 @@ export default async function HomePage() {
     <div>
       <section className="border-b border-[var(--border)] bg-[var(--muted)]">
         <div className="container-prose py-16 text-center">
-          <h1 className="mb-4 text-4xl font-extrabold tracking-tight md:text-5xl">
+          <h1 className="font-display mb-4 text-4xl font-semibold leading-[1.1] tracking-tight md:text-6xl">
             {siteConfig.name}
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-300">
@@ -35,7 +35,7 @@ export default async function HomePage() {
 
       <section className="container-prose py-12">
         <div className="mb-6 flex items-baseline justify-between">
-          <h2 className="text-2xl font-bold tracking-tight">Latest guides</h2>
+          <h2 className="font-display text-2xl font-semibold tracking-tight">Latest guides</h2>
           <Link href="/blog" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
             View all →
           </Link>

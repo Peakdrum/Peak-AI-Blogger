@@ -59,35 +59,46 @@ const REHYPE_OPTIONS = {
   behavior: "wrap", // wrap heading text in an anchor (linkable)
 } as const;
 
-/* ───────────── Component map (Tailwind styles) ───────────── */
+/* ───────────── Component map (editorial prose, no underlined headings) ───────────── */
 const components: Components = {
   h1: ({ children }) => (
-    <h1 className="mt-8 mb-4 text-3xl font-bold tracking-tight md:text-4xl">{children}</h1>
+    <h1 className="font-display mt-10 mb-5 text-3xl font-semibold leading-[1.15] tracking-tight md:text-4xl">
+      {children}
+    </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="mt-10 mb-3 border-b pb-1 text-2xl font-semibold tracking-tight">{children}</h2>
+    <h2 className="font-display mt-12 mb-3 text-[1.7rem] font-semibold leading-snug tracking-tight">
+      {children}
+    </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="mt-8 mb-2 text-xl font-semibold tracking-tight">{children}</h3>
+    <h3 className="font-display mt-9 mb-2 text-xl font-semibold tracking-tight text-accent">
+      {children}
+    </h3>
   ),
-  p: ({ children }) => <p className="my-4 leading-7 text-[1.05rem]">{children}</p>,
+  p: ({ children }) => <p className="my-5 text-[1.06rem] leading-[1.75] text-foreground/90">{children}</p>,
   a: ({ children, href }) => (
-    <a href={href} className="text-blue-600 underline decoration-blue-300 hover:decoration-blue-600 dark:text-blue-400">
+    <a
+      href={href}
+      className="font-medium text-accent underline decoration-accent/35 underline-offset-2 transition-colors hover:decoration-accent"
+    >
       {children}
     </a>
   ),
-  ul: ({ children }) => <ul className="my-4 list-disc space-y-1 pl-6">{children}</ul>,
-  ol: ({ children }) => <ol className="my-4 list-decimal space-y-1 pl-6">{children}</ol>,
-  li: ({ children }) => <li className="leading-7">{children}</li>,
+  strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+  ul: ({ children }) => <ul className="my-5 space-y-2 pl-5 text-[1.06rem] leading-[1.7] [li::marker]:text-accent">{children}</ul>,
+  ol: ({ children }) => <ol className="my-5 list-decimal space-y-2 pl-5 text-[1.06rem] leading-[1.7] [li::marker]:text-accent">{children}</ol>,
+  li: ({ children }) => <li className="pl-1">{children}</li>,
   blockquote: ({ children }) => (
-    <blockquote className="my-4 border-l-4 border-gray-300 pl-4 italic text-gray-600 dark:text-gray-300">
+    <blockquote className="my-6 border-l-2 border-accent pl-5 font-display text-lg italic text-ink-soft">
       {children}
     </blockquote>
   ),
+  hr: () => <hr className="my-10 border-0 text-center before:content-['•••'] before:text-ink-soft before:tracking-[0.5em]" />,
   code: ({ className, children, ...props }) => {
     const isInline = !className;
     return isInline ? (
-      <code className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[0.85em] dark:bg-gray-800" {...props}>
+      <code className="rounded-[0.35rem] bg-muted px-1.5 py-0.5 font-mono text-[0.84em] text-accent" {...props}>
         {children}
       </code>
     ) : (
@@ -97,38 +108,39 @@ const components: Components = {
     );
   },
   pre: ({ children }) => (
-    <pre className="my-4 overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm leading-6 text-gray-100">
+    <pre className="font-mono my-6 overflow-x-auto rounded-xl border border-border bg-surface p-4 text-[0.85rem] leading-relaxed">
       {children}
     </pre>
   ),
   table: ({ children }) => (
-    <div className="my-4 overflow-x-auto">
+    <div className="my-6 overflow-x-auto rounded-xl border border-border">
       <table className="w-full border-collapse text-sm">{children}</table>
     </div>
   ),
   th: ({ children }) => (
-    <th className="border border-gray-300 px-3 py-2 text-left font-semibold bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+    <th className="border-b border-border bg-muted px-3.5 py-2.5 text-left font-semibold">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="border border-gray-300 px-3 py-2 dark:border-gray-700">{children}</td>
+    <td className="border-b border-border px-3.5 py-2.5 text-ink-soft">{children}</td>
   ),
   section: ({ children, ...props }) => {
     const ds = (props as any)["data-section"] as string | undefined;
     const cls =
       ds === "answer"
-        ? "my-6 rounded-lg border-l-4 border-emerald-500 bg-emerald-50 p-4 dark:bg-emerald-950/30"
+        ? "my-8 rounded-2xl border border-accent/25 bg-accent-soft/50 p-5 md:p-6"
         : ds === "faq"
-          ? "my-6 rounded-lg border-l-4 border-violet-500 bg-violet-50 p-4 dark:bg-violet-950/30"
+          ? "my-8 rounded-2xl border border-border bg-muted/60 p-5 md:p-6"
           : ds === "intro"
-            ? "my-6 text-lg text-gray-600 dark:text-gray-300"
+            ? "my-6 font-display text-xl leading-relaxed text-ink-soft"
             : "my-6";
     return (
       <section {...props} className={cls}>
         {ds && (
-          <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-            {ds === "answer" ? "Direct answer" : ds}
+          <span className="mb-3 flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-accent">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+            {ds === "answer" ? "Direct answer" : ds === "faq" ? "FAQ" : ds}
           </span>
         )}
         {children}

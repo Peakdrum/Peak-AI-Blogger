@@ -1,52 +1,92 @@
 @import "tailwindcss";
 
+/* ───────── Design tokens (editorial/magazine) ─────────
+   Warm paper background, ink-black text, single ember accent.
+   Headings: Fraunces (serif display). Body: Geist Sans. Code: Geist Mono.
+   Mapped through @theme inline so utilities (bg-paper, text-ink, text-accent,
+   font-display) stay theme-switchable via the CSS vars below. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+  --color-ink-soft: var(--ink-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --muted: #f6f6f6;
-  --border: #e5e5e5;
+  --background: #faf8f4;   /* warm paper */
+  --foreground: #1c1917;   /* ink */
+  --muted: #f1ece3;        /* section tint */
+  --border: #e6e0d4;       /* warm hairline */
+  --surface: #ffffff;      /* card */
+  --ink-soft: #6b6259;     /* secondary text */
+  --accent: #c2410c;       /* ember (orange-700) */
+  --accent-soft: #fdebd3;  /* ember tint */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --muted: #161616;
-    --border: #262626;
+    --background: #0c0a09;
+    --foreground: #f5f1ea;
+    --muted: #1a1612;
+    --border: #2a241e;
+    --surface: #16120e;
+    --ink-soft: #a8a29e;
+    --accent: #fb923c;     /* brighter ember on dark */
+    --accent-soft: #3a1f0f;
   }
 }
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 2rem;
+  scroll-padding-top: 6rem;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
+/* Distinctive focus ring for keyboard users (a11y) */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ───────── Layout helpers ───────── */
 .container-prose {
   width: 100%;
   max-width: 72rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
 }
-
 .container-narrow {
   width: 100%;
   max-width: 44rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
+}
+/* Optimal reading measure for article body (~65–70 chars) */
+.measure {
+  max-width: 42rem;
 }
 
 .line-clamp-2 {
@@ -54,4 +94,30 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Editorial heading defaults (Fraunces) — used across the site */
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.018em;
+}
+
+/* Subtle entrance for content blocks (respects reduced motion) */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rise {
+  animation: riseIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+  html { scroll-behavior: auto; }
 }
